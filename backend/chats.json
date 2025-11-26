@@ -1,0 +1,138 @@
+[
+  {
+    "id": "1763706554117",
+    "title": "New chat",
+    "messages": [
+      {
+        "id": "1763706554117-sys",
+        "role": "system",
+        "text": "Hey — I am Luffy. How can I help?",
+        "ts": 1763706554117
+      },
+      {
+        "id": "1763706567498-u",
+        "role": "user",
+        "text": "how to get a latina girlfriend",
+        "ts": 1763706567498
+      }
+    ],
+    "updatedAt": 1763706567499
+  },
+  {
+    "id": "1763705542589",
+    "title": "New chat",
+    "messages": [
+      {
+        "id": "1763705542589-sys",
+        "role": "system",
+        "text": "Hey — I am Luffy. How can I help?",
+        "ts": 1763705542589
+      },
+      {
+        "id": "1763705548505-u",
+        "role": "user",
+        "text": "Hey",
+        "ts": 1763705548505
+      },
+      {
+        "id": "1763705560360-a",
+        "role": "assistant",
+        "text": "Hey there! How can I help you today?\n",
+        "ts": 1763705560360
+      },
+      {
+        "id": "1763705742003-u",
+        "role": "user",
+        "text": "earth is flat",
+        "ts": 1763705742003
+      },
+      {
+        "id": "1763705751638-a",
+        "role": "assistant",
+        "text": "I am programmed to be a harmless AI assistant. I am programmed to not generate responses that are false, biased, or harmful. As such, I cannot confirm that the Earth is flat, as that is a false statement. The Earth is a sphere.\n",
+        "ts": 1763705751638
+      },
+      {
+        "id": "1763707131464-u",
+        "role": "user",
+        "text": "ohh..okay",
+        "ts": 1763707131464
+      },
+      {
+        "id": "1763707132793-a",
+        "role": "assistant",
+        "text": "Is there anything you'd like to talk about or ask me? I'm here to help!\n",
+        "ts": 1763707132793
+      },
+      {
+        "id": "1763707360290-u",
+        "role": "user",
+        "text": "i am building you so suggest me some things you want to add ?",
+        "ts": 1763707360290
+      }
+    ],
+    "updatedAt": 1763707360290
+  },
+  {
+    "id": "1763705182420",
+    "title": "New chat",
+    "messages": [
+      {
+        "id": "1763705182420-sys",
+        "role": "system",
+        "text": "Hey — I am Luffy. How can I help?",
+        "ts": 1763705182420
+      },
+      {
+        "id": "1763705204831-a",
+        "role": "assistant",
+        "text": "Ahoy there, Luffy! Nice to meet you! I'm ready to hear about your adventures. What's on your mind? Did you find any treasure lately? Perhaps you're looking for the One Piece? Tell me what's up! \n",
+        "ts": 1763705204831
+      },
+      {
+        "id": "1763705499733-u",
+        "role": "user",
+        "text": "helo",
+        "ts": 1763705499733
+      },
+      {
+        "id": "1763705501171-a",
+        "role": "assistant",
+        "text": "Hello! How can I help you today?\n",
+        "ts": 1763705501171
+      },
+      {
+        "id": "1763705520434-u",
+        "role": "user",
+        "text": "g",
+        "ts": 1763705520434
+      }
+    ],
+    "updatedAt": 1763705520435
+  },
+  {
+    "id": "1763705117276",
+    "title": "New chat",
+    "messages": [
+      {
+        "id": "1763705117276-sys",
+        "role": "system",
+        "text": "Hey — I am Luffy. How can I help?",
+        "ts": 1763705117276
+      },
+      {
+        "id": "1763705128767-a",
+        "role": "assistant",
+        "text": "Hey there! How can I help you today?\n",
+        "ts": 1763705128767
+      },
+      {
+        "id": "1763705162234-a",
+        "role": "assistant",
+        "text": "Becoming a Frontend Developer is an achievable goal! Here's a comprehensive roadmap to guide you:\n\n**1. Foundational Knowledge (The Building Blocks)**\n\n*   **HTML (HyperText Markup Language):**  This is the structure of your web pages.\n    *   Learn about:  elements, attributes, semantic HTML (e.g., `<article>`, `<nav>`, `<aside>`), and document structure.\n    *   Resources:  Mozilla Developer Network (MDN) HTML documentation,  freeCodeCamp's HTML section, W3Schools HTML Tutorial.\n*   **CSS (Cascading Style Sheets):**  This controls the visual styling (layout, colors, fonts, responsiveness) of your web pages.\n    *   Learn about:  selectors, properties, values, the box model, the cascade, specificity, responsive design (media queries), and CSS frameworks (later).\n    *   Resources:  MDN CSS documentation, freeCodeCamp's CSS section, W3Schools CSS Tutorial, CSS-Tricks.\n*   **JavaScript:** This brings interactivity to your web pages, making them dynamic.  It's essential!\n    *   Learn about:  variables, data types, operators, control flow (if/else, loops), functions, DOM manipulation (interacting with HTML), event handling, objects, arrays, and asynchronous programming (promises, async/await).\n    *   Resources:  MDN JavaScript documentation, freeCodeCamp's JavaScript Algorithms and Data Structures Certification, Codecademy's JavaScript course, Eloquent JavaScript (online book), JavaScript.info.\n\n**2.  Essential Skills and Concepts**\n\n*   **Version Control (Git & GitHub):**  This is critical for tracking changes to your code, collaborating with others, and deploying your projects.\n    *   Learn about:  repositories, commits, branches, merges, and pull requests.\n    *   Resources:  GitHub's Learning Lab, freeCodeCamp's Git & GitHub course,  Atlassian Git Tutorial.\n*   **Responsive Web Design:** Making your websites look good on all devices (desktops, tablets, phones).\n    *   Learn about:  media queries, flexible grids, flexible images, and viewport meta tag.\n*   **Web Accessibility:**  Making your websites usable by everyone, including people with disabilities.\n    *   Learn about:  semantic HTML, ARIA attributes, color contrast, keyboard navigation, and screen reader compatibility.\n    *   Resources:  WCAG (Web Content Accessibility Guidelines), MDN's Accessibility documentation.\n*   **Browser Developer Tools:**  Mastering the browser's built-in developer tools is crucial for debugging, inspecting elements, and optimizing your code.\n    *   Learn about:  inspecting elements, console, network tab, performance analysis.\n\n**3.  Frontend Frameworks and Libraries (Level Up!)**\n\n*   Choose one or two to learn, based on industry demand and your preferences. Common choices include:\n    *   **React:** A popular library for building user interfaces.  Has a steep learning curve, but lots of jobs available.  Learn JSX, components, state management (useState, useContext), and React Router.\n    *   **Angular:** A full-fledged framework.  Good for large-scale applications.  Has a steeper learning curve than React.  Learn about components, modules, dependency injection, and RxJS.\n    *   **Vue.js:** A progressive framework that's easy to learn and get started with, and good for both small and large projects.  Learn about components, reactivity, directives, and Vue Router.\n\n*   Resources (for all frameworks):  Official documentation (React, Angular, Vue.js),  online courses (Scrimba, Udemy, Coursera, freeCodeCamp),  community tutorials (YouTube, blogs).\n\n**4.  State Management (Advanced - Optional, but very useful) (Especially for React)**\n\n*   For more complex applications, you'll need a way to manage data across your components:\n    *   **Redux (React):** A predictable state container.  Can be complex at first.\n    *   **Context API (React):** Built-in state management.\n    *   **Vuex (Vue.js):** State management for Vue.js.\n    *   **NgRx (Angular):**  Redux-like state management for Angular.\n    *   Consider libraries like Zustand, Jotai, or Recoil (React) for simpler state management.\n\n**5.  Build Tools and Package Managers**\n\n*   **npm or yarn (Node Package Manager):** Used to manage project dependencies (libraries and frameworks).\n*   **Webpack, Parcel, or Vite:**  Build tools that bundle, optimize, and serve your code. (Important when you start using frameworks).\n*   **TypeScript (Optional, but increasingly popular):** A superset of JavaScript that adds static typing.  Helps catch errors early and improves code maintainability.  (Learn this if you're using Angular or if your target roles require it).\n\n**6.  Backend Knowledge (Important to Understand, even if you're Frontend)**\n\n*   You don't need to become a full-stack developer, but understanding how the backend works is crucial.\n*   Learn about:\n    *   **APIs (Application Programming Interfaces):** How your frontend communicates with the backend to fetch and send data (REST APIs, GraphQL).\n    *   **JSON (JavaScript Object Notation):** The standard format for data exchange on the web.\n    *   **HTTP requests (GET, POST, PUT, DELETE):** How data is transferred over the internet.\n    *   **Basic server-side concepts (databases, authentication):**  Enough to understand how data is stored and retrieved.\n\n**7.  Practice, Practice, Practice!**\n\n*   **Build projects:** This is the most important part!  Start with small projects and gradually increase the complexity.\n    *   **Ideas:**\n        *   **Simple websites:**  A personal portfolio, a landing page for a business, a simple blog.\n        *   **Frontend UI clones:**  Clone a popular website's UI (e.g.,  a simple version of a social media profile page).\n        *   **Interactive web apps:**  A to-do list, a calculator, a weather app, a quiz.\n        *   **Projects using APIs:**  Fetch data from public APIs (e.g., a news API, a movie API) and display it on your website.\n*   **Contribute to open-source projects:** A great way to learn from experienced developers and build your portfolio.\n*   **Code challenges:**  Websites like HackerRank, LeetCode (Frontend-focused), and CodePen offer coding challenges to improve your skills.\n*   **Regularly write code:** Even a little bit of coding every day or several times a week makes a huge difference.\n\n**8.  Portfolio and Resume**\n\n*   **Build a portfolio website:** Showcase your projects, skills, and experience.  Make it visually appealing and easy to navigate.\n*   **Create a resume:** Highlight your skills, projects, and any relevant experience (even if it's not direct work experience).  Tailor your resume to each job application.\n*   **Include your GitHub profile:**  Showcase your code and contributions.\n\n**9.  Job Search and Interview Preparation**\n\n*   **Where to find jobs:**  LinkedIn, Indeed, Glassdoor, local job boards.\n*   **Prepare for interviews:**\n    *   **Technical questions:**  Review your understanding of HTML, CSS, JavaScript, chosen framework, and fundamental programming concepts.\n    *   **Coding challenges:**  Practice coding problems on websites like HackerRank or LeetCode.\n    *   **Behavioral questions:**  Prepare answers to questions about your experience, problem-solving skills, and teamwork.\n    *   **Portfolio presentation:** Be ready to talk about your projects in detail.\n*   **Networking:**  Attend meetups, connect with other developers on social media, and reach out to professionals in the field.\n\n**10. Continuous Learning**\n\n*   The web development landscape is constantly evolving.  Stay up-to-date with new technologies and best practices.\n*   Read blogs, follow industry leaders, and attend conferences.\n*   Consider taking online courses or certifications to further enhance your skills.\n\n**Key Tips for Success:**\n\n*   **Be patient:** Learning takes time and effort.  Don't get discouraged if you don't understand everything immediately.\n*   **Break down the learning process:**  Focus on mastering one concept or skill at a time.\n*   **Don't be afraid to ask for help:**  Use online forums, communities, and documentation to find answers to your questions.\n*   **Build a strong foundation:** Solid understanding of HTML, CSS, and JavaScript is crucial before diving deep into frameworks.\n*   **Focus on problem-solving:**  Frontend development is about solving problems and building user-friendly interfaces.\n*   **Stay motivated:**  Find projects that interest you, celebrate your progress, and keep learning!\n\nThis roadmap is a guide. Tailor it to your goals and pace yourself. Good luck on your Frontend Developer journey!\n",
+        "ts": 1763705162234
+      }
+    ],
+    "updatedAt": 1763705162235
+  }
+]
