@@ -9,8 +9,11 @@ export type Chat = {
   id: string;
   title: string;
   messages: Msg[];
+  pinned: boolean;      // new
+  createdAt: number;    // for sorting
   updatedAt: number;
 };
+
 
 const KEY = "luffy_chats_v1";
 
@@ -40,10 +43,16 @@ export function newChatTemplate(title = "New chat"): Chat {
     text: "Hey — I am Luffy. How can I help?",
     ts: Date.now()
   };
+
   return {
     id,
     title,
+    pinned: false,
+    createdAt: Date.now(),
     messages: [sys],
     updatedAt: Date.now()
   };
 }
+
+
+
