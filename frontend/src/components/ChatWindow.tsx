@@ -16,6 +16,7 @@ export default function ChatWindow() {
   );
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [listening, setListening] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   const scrollToBottom = () =>
@@ -56,7 +57,6 @@ export default function ChatWindow() {
   }
 
   async function maybeGenerateTitle(chatId: string, text: string) {
-    // Use latest state snapshot
     const chat = chats.find((c) => c.id === chatId);
     if (!chat) return;
 
@@ -75,10 +75,7 @@ export default function ChatWindow() {
       });
 
       if (!gRes.ok) {
-        console.warn(
-          "generate-title request failed with status",
-          gRes.status
-        );
+        console.warn("generate-title request failed with status", gRes.status);
         return;
       }
 
@@ -127,7 +124,6 @@ export default function ChatWindow() {
       ts: Date.now(),
     };
 
-    // Optimistic user message
     appendMessage(chatId, userMsg);
     setTimeout(scrollToBottom, 50);
 
@@ -151,7 +147,6 @@ export default function ChatWindow() {
       appendMessage(chatId, botMsg);
       setTimeout(scrollToBottom, 50);
 
-      // Generate title once if needed
       await maybeGenerateTitle(chatId, text);
     } catch (err) {
       console.error("sendMessage error", err);
@@ -255,247 +250,273 @@ export default function ChatWindow() {
     });
   }
 
+  // --- Voice input (Web Speech API, Chrome only) -------------------------
+
+  function startVoiceInput() {
+    const SpeechRecognition =
+      (window as any).SpeechRecognition ||
+      (window as any).webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      alert("Speech recognition not supported in this browser.");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = "en-US";
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    setListening(true);
+
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript || "";
+      setInput((prev) =>
+        prev ? `${prev.trim()} ${transcript}` : transcript
+      );
+    };
+
+    recognition.onerror = (event: any) => {
+      console.warn("speech recognition error", event.error);
+      setListening(false);
+    };
+
+    recognition.onend = () => {
+      setListening(false);
+    };
+
+    recognition.start();
+  }
+
+  function toggleVoiceInput() {
+    if (listening) {
+      return;
+    }
+    startVoiceInput();
+  }
+
   // --- Render -------------------------------------------------------------
 
   return (
-    <div
-      style={{
-        display: "flex",
-        height: "100vh",
-        fontFamily: "Inter, Roboto, sans-serif",
-      }}
-    >
+    <div className="flex h-screen bg-slate-100 text-slate-900">
       {/* Sidebar */}
-      <div
-        style={{
-          width: 260,
-          borderRight: "1px solid #e6e9ef",
-          padding: 16,
-          boxSizing: "border-box",
-          background: "#fff",
-        }}
-      >
-        <h3 style={{ margin: "6px 0 12px 0" }}>Luffy</h3>
-        <button
-          onClick={newChat}
-          style={{ display: "block", width: "100%", marginBottom: 8 }}
-        >
-          + New chat
-        </button>
-        <button
-          onClick={clearHistory}
-          style={{ display: "block", width: "100%", marginBottom: 8 }}
-        >
-          Clear history
-        </button>
+      <aside className="w-72 border-r border-slate-200 bg-white flex flex-col">
+        <div className="px-4 py-4 border-b border-slate-200">
+          <h3 className="text-lg font-semibold tracking-tight">Luffy</h3>
+          <p className="text-xs text-slate-500">Your personal dev buddy</p>
+        </div>
 
-        <div style={{ marginTop: 12 }}>
+        <div className="px-4 pt-3 pb-2 space-y-2 border-b border-slate-100">
+          <button
+            onClick={newChat}
+            className="w-full rounded-full bg-blue-600 text-white text-sm font-medium py-2.5 hover:bg-blue-700 transition"
+          >
+            + New chat
+          </button>
+          <button
+            onClick={clearHistory}
+            className="w-full rounded-full border border-slate-200 text-xs text-slate-600 py-2 hover:bg-slate-50 transition"
+          >
+            Clear history
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto px-2 py-3 space-y-1">
           {[...chats]
             .sort((a, b) => {
-              // Pinned first, then newest by updatedAt
               if (a.pinned && !b.pinned) return -1;
               if (!a.pinned && b.pinned) return 1;
               return b.updatedAt - a.updatedAt;
             })
-            .map((c) => (
-              <div
-                key={c.id}
-                onClick={() => setActiveChatId(c.id)}
-                style={{
-                  padding: 10,
-                  marginBottom: 8,
-                  borderRadius: 8,
-                  background:
-                    c.id === activeChatId ? "#f0f6ff" : "#fafafa",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  gap: 8,
-                }}
-              >
-                <div>
-                  <div style={{ fontSize: 14, fontWeight: 600 }}>
-                    {c.title}
-                    {c.pinned ? " 📌" : ""}
-                  </div>
-                  <div style={{ fontSize: 12, color: "#666" }}>
-                    {new Date(c.updatedAt).toLocaleString()}
-                  </div>
-                </div>
-
-                <div style={{ display: "flex", gap: 4 }}>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      togglePinChat(c.id);
-                    }}
-                    style={{
-                      fontSize: 12,
-                      padding: "2px 6px",
-                      borderRadius: 4,
-                      border: "1px solid #ddd",
-                      background: "#fff",
-                      cursor: "pointer",
-                    }}
-                    title={c.pinned ? "Unpin" : "Pin"}
-                  >
-                    📌
-                  </button>
-
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      renameChat(c.id);
-                    }}
-                    style={{
-                      fontSize: 12,
-                      padding: "2px 6px",
-                      borderRadius: 4,
-                      border: "1px solid #ddd",
-                      background: "#fff",
-                      cursor: "pointer",
-                    }}
-                    title="Rename"
-                  >
-                    ✏️
-                  </button>
-
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      deleteChat(c.id);
-                    }}
-                    style={{
-                      fontSize: 12,
-                      padding: "2px 6px",
-                      borderRadius: 4,
-                      border: "1px solid #f4a3a3",
-                      background: "#ffecec",
-                      color: "#c00",
-                      cursor: "pointer",
-                    }}
-                    title="Delete"
-                  >
-                    🗑
-                  </button>
-                </div>
-              </div>
-            ))}
-        </div>
-      </div>
-
-      {/* Chat area */}
-      <div
-        style={{
-          flex: 1,
-          display: "flex",
-          flexDirection: "column",
-          background: "#f6f8fb",
-        }}
-      >
-        <div
-          style={{
-            padding: "24px 32px",
-            borderBottom: "1px solid #e6e9ef",
-            background: "#fff",
-          }}
-        >
-          <h2 style={{ margin: 0 }}>Luffy — AI Assistant</h2>
-        </div>
-
-        <div style={{ flex: 1, padding: 24, overflowY: "auto" }}>
-          {!activeChat ? (
-            <div>Select or create a chat</div>
-          ) : (
-            <div>
-              {activeChat.messages.map((m) => (
+            .map((c) => {
+              const isActive = c.id === activeChatId;
+              return (
                 <div
-                  key={m.id}
-                  style={{
-                    marginBottom: 18,
-                    display: "flex",
-                    justifyContent:
-                      m.role === "user" ? "flex-end" : "flex-start",
-                  }}
+                  key={c.id}
+                  onClick={() => setActiveChatId(c.id)}
+                  className={`group flex items-center justify-between rounded-xl px-3 py-2.5 text-sm cursor-pointer transition ${
+                    isActive
+                      ? "bg-blue-50 text-slate-900"
+                      : "hover:bg-slate-50"
+                  }`}
                 >
-                  <div
-                    style={{
-                      maxWidth: "70%",
-                      padding: "10px 14px",
-                      borderRadius: 12,
-                      background:
-                        m.role === "user" ? "#1d4ed8" : "#fff",
-                      color: m.role === "user" ? "#fff" : "#111",
-                      boxShadow:
-                        m.role === "assistant"
-                          ? "0 1px 3px rgba(16,24,40,0.06)"
-                          : undefined,
-                    }}
-                  >
-                    <div
-                      style={{
-                        whiteSpace: "pre-wrap",
-                        lineHeight: 1.5,
-                      }}
-                    >
-                      {m.text}
-                    </div>
-                    <div
-                      style={{
-                        fontSize: 11,
-                        color:
-                          m.role === "user"
-                            ? "rgba(255,255,255,0.8)"
-                            : "#666",
-                        marginTop: 6,
-                        textAlign: "right",
-                      }}
-                    >
-                      {m.ts
-                        ? new Date(m.ts).toLocaleTimeString()
-                        : ""}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-slate-200 text-[11px] font-semibold text-slate-700">
+                        {c.title?.charAt(0)?.toUpperCase() || "L"}
+                      </span>
+                      <div className="min-w-0">
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="truncate font-medium text-[13px]">
+                            {c.title || "New chat"}
+                            {c.pinned && (
+                              <span className="ml-1 text-[11px] text-amber-500">
+                                📌
+                              </span>
+                            )}
+                          </p>
+                        </div>
+                        <p className="text-[11px] text-slate-400 truncate">
+                          {new Date(c.updatedAt).toLocaleString()}
+                        </p>
+                      </div>
                     </div>
                   </div>
+
+                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        togglePinChat(c.id);
+                      }}
+                      className="rounded-md border border-slate-200 bg-white text-[11px] px-1.5 py-1 hover:bg-slate-50"
+                      title={c.pinned ? "Unpin" : "Pin"}
+                    >
+                      📌
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        renameChat(c.id);
+                      }}
+                      className="rounded-md border border-slate-200 bg-white text-[11px] px-1.5 py-1 hover:bg-slate-50"
+                      title="Rename"
+                    >
+                      ✏️
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        deleteChat(c.id);
+                      }}
+                      className="rounded-md border border-rose-200 bg-rose-50 text-[11px] px-1.5 py-1 text-rose-600 hover:bg-rose-100"
+                      title="Delete"
+                    >
+                      🗑
+                    </button>
+                  </div>
                 </div>
-              ))}
+              );
+            })}
+        </div>
+      </aside>
+
+      {/* Main chat area */}
+      <main className="flex-1 flex flex-col">
+        <header className="h-14 border-b border-slate-200 bg-white flex items-center px-6">
+          <div>
+            <h2 className="text-sm font-semibold">Luffy — AI Assistant</h2>
+            {activeChat && (
+              <p className="text-[11px] text-slate-400">
+                {activeChat.title || "New chat"}
+              </p>
+            )}
+          </div>
+        </header>
+
+        <section className="flex-1 overflow-y-auto px-4 sm:px-8 py-4 sm:py-6 bg-slate-50">
+          {!activeChat ? (
+            <div className="h-full flex items-center justify-center text-slate-400 text-sm">
+              Select or create a chat to get started.
+            </div>
+          ) : (
+            <div className="max-w-3xl mx-auto">
+              {activeChat.messages.map((m) => {
+                const isUser = m.role === "user";
+                return (
+                  <div
+                    key={m.id}
+                    className={`flex mb-3 ${
+                      isUser ? "justify-end" : "justify-start"
+                    }`}
+                  >
+                    <div
+                      className={`flex max-w-[75%] gap-2 ${
+                        isUser ? "flex-row-reverse" : "flex-row"
+                      }`}
+                    >
+                      {/* avatar */}
+                      <div className="mt-1">
+                        <div
+                          className={`h-7 w-7 rounded-full flex items-center justify-center text-[11px] font-semibold ${
+                            isUser
+                              ? "bg-blue-600 text-white"
+                              : "bg-slate-200 text-slate-700"
+                          }`}
+                        >
+                          {isUser ? "You" : "AI"}
+                        </div>
+                      </div>
+
+                      {/* bubble */}
+                      <div
+                        className={`rounded-2xl px-3 py-2 text-sm shadow-sm ${
+                          isUser
+                            ? "bg-blue-600 text-white rounded-br-none"
+                            : "bg-white text-slate-900 border border-slate-200 rounded-bl-none"
+                        }`}
+                      >
+                        <p className="whitespace-pre-wrap leading-relaxed">
+                          {m.text}
+                        </p>
+                        <p
+                          className={`mt-1 text-[10px] text-right ${
+                            isUser
+                              ? "text-blue-100"
+                              : "text-slate-400"
+                          }`}
+                        >
+                          {m.ts
+                            ? new Date(m.ts).toLocaleTimeString()
+                            : ""}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
 
               <div ref={messagesEndRef} />
             </div>
           )}
-        </div>
+        </section>
 
-        <div
-          style={{
-            padding: 16,
-            borderTop: "1px solid #e6e9ef",
-            display: "flex",
-            gap: 8,
-            alignItems: "center",
-            background: "#fff",
-          }}
-        >
-          <input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={onKeyDownSend}
-            placeholder="Type a message..."
-            style={{
-              flex: 1,
-              padding: "10px 12px",
-              borderRadius: 8,
-              border: "1px solid #e6e9ef",
-            }}
-          />
-          <button
-            onClick={sendMessage}
-            disabled={loading}
-            style={{ padding: "10px 16px", borderRadius: 8 }}
-          >
-            {loading ? "..." : "Send"}
-          </button>
-        </div>
-      </div>
+        {/* Input */}
+        <footer className="border-t border-slate-200 bg-white">
+          <div className="max-w-3xl mx-auto flex items-center gap-2 px-4 py-3">
+            <input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={onKeyDownSend}
+              placeholder="Type a message…"
+              className="flex-1 rounded-full border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100 transition"
+            />
+
+            {/* Mic button */}
+            <button
+              onClick={toggleVoiceInput}
+              className={`flex items-center justify-center rounded-full border px-3 py-2 text-sm transition ${
+                listening
+                  ? "border-rose-300 bg-rose-50 text-rose-600 shadow-sm"
+                  : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+              }`}
+              title={
+                listening ? "Listening… speak now" : "Start voice input"
+              }
+            >
+              {listening ? "🎙️" : "🎤"}
+            </button>
+
+            <button
+              onClick={sendMessage}
+              disabled={loading}
+              className="rounded-full bg-blue-600 text-white text-sm font-medium px-4 py-2.5 hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed transition"
+            >
+              {loading ? "…" : "Send"}
+            </button>
+          </div>
+        </footer>
+      </main>
     </div>
   );
 }
