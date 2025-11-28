@@ -16,7 +16,16 @@ export default function ChatWindow() {
   );
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // voice state
   const [listening, setListening] = useState(false);
+  const [autoConversation, setAutoConversation] = useState(false);
+  const recognitionRef = useRef<any | null>(null);
+  const autoConversationRef = useRef(false);
+
+  // track TTS speaking state for barge-in control
+  const speakingRef = useRef(false);
+
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   const scrollToBottom = () =>
@@ -106,21 +115,52 @@ export default function ChatWindow() {
     }
   }
 
-  // --- Send message --------------------------------------------------------
+  // TTS helper: speak assistant replies, with barge-in aware onEnd
+  function speak(text: string, onEnd?: () => void) {
+    if (!text || !text.trim()) return;
+    if (typeof window === "undefined") return;
+    const synth = window.speechSynthesis;
+    if (!synth) return;
 
-  async function sendMessage() {
-    if (!input.trim() || !activeChatId) return;
+    try {
+      // cancel any previous speech and mark it as stopped
+      synth.cancel();
+      speakingRef.current = false;
 
-    const text = input.trim();
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.lang = "en-US";
+      utter.rate = 1.02;
+      utter.pitch = 1;
+
+      speakingRef.current = true;
+
+      utter.onend = () => {
+        // if we were force-stopped (barge-in), don't run onEnd
+        if (!speakingRef.current) return;
+        speakingRef.current = false;
+        if (onEnd) onEnd();
+      };
+
+      synth.speak(utter);
+    } catch (e) {
+      console.warn("speech synthesis failed", e);
+    }
+  }
+
+  // --- Send message core (used by text + voice) ---------------------------
+
+  async function sendMessageFromText(text: string, fromVoice = false) {
+    const trimmed = text.trim();
+    if (!trimmed || !activeChatId) return;
+
     const chatId = activeChatId;
 
-    setInput("");
     setLoading(true);
 
     const userMsg: Msg = {
       id: Date.now().toString() + "-u",
       role: "user",
-      text,
+      text: trimmed,
       ts: Date.now(),
     };
 
@@ -131,11 +171,23 @@ export default function ChatWindow() {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: text }),
+        body: JSON.stringify({ message: trimmed }),
       });
 
       const data = await res.json().catch(() => null);
       const replyText = data?.reply ?? "No response";
+
+      // If this came from voice, after speaking we may want to restart recognition
+      const afterSpeak =
+        fromVoice && autoConversationRef.current
+          ? () => {
+              if (autoConversationRef.current) {
+                startVoiceInput(true);
+              }
+            }
+          : undefined;
+
+      speak(replyText, afterSpeak);
 
       const botMsg: Msg = {
         id: Date.now().toString() + "-a",
@@ -147,7 +199,7 @@ export default function ChatWindow() {
       appendMessage(chatId, botMsg);
       setTimeout(scrollToBottom, 50);
 
-      await maybeGenerateTitle(chatId, text);
+      await maybeGenerateTitle(chatId, trimmed);
     } catch (err) {
       console.error("sendMessage error", err);
       const networkMsg: Msg = {
@@ -160,6 +212,14 @@ export default function ChatWindow() {
     } finally {
       setLoading(false);
     }
+  }
+
+  // UI send via text input
+  async function sendMessage() {
+    const text = input.trim();
+    if (!text || !activeChatId) return;
+    setInput("");
+    await sendMessageFromText(text, false);
   }
 
   // --- Chat management: new / clear ---------------------------------------
@@ -250,9 +310,14 @@ export default function ChatWindow() {
     });
   }
 
-  // --- Voice input (Web Speech API, Chrome only) -------------------------
+  // --- Voice input (Web Speech API) + conversation loop + barge-in --------
 
-  function startVoiceInput() {
+  function startVoiceInput(autoSend: boolean) {
+    if (recognitionRef.current) {
+      // already listening
+      return;
+    }
+
     const SpeechRecognition =
       (window as any).SpeechRecognition ||
       (window as any).webkitSpeechRecognition;
@@ -267,32 +332,71 @@ export default function ChatWindow() {
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
 
+    recognitionRef.current = recognition;
+
+    // HARD BARGE-IN: stop any ongoing speech the moment we begin listening
+    if (typeof window !== "undefined" && window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+      speakingRef.current = false;
+    }
+
     setListening(true);
 
     recognition.onresult = (event: any) => {
       const transcript = event.results[0][0].transcript || "";
-      setInput((prev) =>
-        prev ? `${prev.trim()} ${transcript}` : transcript
-      );
+
+      if (autoSend) {
+        // Don't keep it in the input, just send
+        sendMessageFromText(transcript, true);
+      } else {
+        setInput((prev) =>
+          prev ? `${prev.trim()} ${transcript}` : transcript
+        );
+      }
     };
 
     recognition.onerror = (event: any) => {
       console.warn("speech recognition error", event.error);
       setListening(false);
+      recognitionRef.current = null;
     };
 
     recognition.onend = () => {
       setListening(false);
+      recognitionRef.current = null;
+      // In continuous mode we restart AFTER TTS ends, not here.
     };
 
     recognition.start();
   }
 
-  function toggleVoiceInput() {
-    if (listening) {
-      return;
+  function toggleConversationMode() {
+    if (autoConversationRef.current) {
+      // turn OFF conversation mode
+      autoConversationRef.current = false;
+      setAutoConversation(false);
+
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.stop();
+        } catch {
+          // ignore
+        }
+        recognitionRef.current = null;
+      }
+
+      setListening(false);
+
+      if (typeof window !== "undefined" && window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+      speakingRef.current = false;
+    } else {
+      // turn ON conversation mode
+      autoConversationRef.current = true;
+      setAutoConversation(true);
+      startVoiceInput(true);
     }
-    startVoiceInput();
   }
 
   // --- Render -------------------------------------------------------------
@@ -461,9 +565,7 @@ export default function ChatWindow() {
                         </p>
                         <p
                           className={`mt-1 text-[10px] text-right ${
-                            isUser
-                              ? "text-blue-100"
-                              : "text-slate-400"
+                            isUser ? "text-blue-100" : "text-slate-400"
                           }`}
                         >
                           {m.ts
@@ -492,19 +594,23 @@ export default function ChatWindow() {
               className="flex-1 rounded-full border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm outline-none focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-100 transition"
             />
 
-            {/* Mic button */}
+            {/* Conversation mode button */}
             <button
-              onClick={toggleVoiceInput}
+              onClick={toggleConversationMode}
               className={`flex items-center justify-center rounded-full border px-3 py-2 text-sm transition ${
-                listening
-                  ? "border-rose-300 bg-rose-50 text-rose-600 shadow-sm"
+                autoConversation
+                  ? "border-emerald-300 bg-emerald-50 text-emerald-600 shadow-sm"
                   : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
               }`}
               title={
-                listening ? "Listening… speak now" : "Start voice input"
+                autoConversation
+                  ? listening
+                    ? "Listening… tap to stop voice conversation"
+                    : "Voice conversation active"
+                  : "Start continuous voice conversation"
               }
             >
-              {listening ? "🎙️" : "🎤"}
+              {autoConversation ? (listening ? "🎙️" : "🟢") : "🎤"}
             </button>
 
             <button
